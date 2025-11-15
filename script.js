@@ -386,13 +386,13 @@ function renderEarnQuestion() {
       feedback.className = "feedback";
 
       if (index === q.correct) {
-        totalMoney += 1000;
-        feedback.textContent = "Correct! +$1000";
-        feedback.style.color = "green";
-      } else {
-        feedback.textContent = `Incorrect. Correct: "${q.choices[q.correct]}"`;
-        feedback.style.color = "red";
-      }
+         totalMoney += 1000;
+  feedback.textContent = "Correct! +$1000";
+  feedback.classList.add("feedback", "correct"); // apply green glow
+} else {
+  feedback.textContent = `Incorrect. Correct: "${q.choices[q.correct]}"`;
+  feedback.style.color = "white"; // keep incorrect answers normal
+}
 
       moneyDisplay.textContent = totalMoney.toString();
       saveMoney();
@@ -467,6 +467,29 @@ function renderInvestMenu() {
 
   investScreen.querySelectorAll(".strategy").forEach(btn => {
     btn.addEventListener("click", (e) => {
+      // Remove previous selection
+      investScreen.querySelectorAll(".strategy").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+
+      // Remove previous description if exists
+      const oldDesc = document.querySelector(".strategy-description");
+      if (oldDesc) oldDesc.remove();
+
+      // Add new glowing description
+      const desc = document.createElement("p");
+      desc.className = "strategy-description";
+
+      if (btn.dataset.strategy === "rule110") {
+        desc.textContent = "Rule 110: Allocate stocks and bonds based on your age.";
+      } else if (btn.dataset.strategy === "bucket") {
+        desc.textContent = "Bucket Strategy: Split your money between short-term and growth buckets.";
+      } else if (btn.dataset.strategy === "dca") {
+        desc.textContent = "Dollar-Cost Averaging: Invest a fixed amount regularly to smooth risk.";
+      }
+
+      investScreen.appendChild(desc);
+
+      // existing click logic
       const strat = btn.dataset.strategy;
       if (strat === "rule110") rule110Investment();
       else if (strat === "bucket") bucketInvestment();
@@ -477,6 +500,7 @@ function renderInvestMenu() {
   const investBack = document.getElementById("invest-back");
   investBack.addEventListener("click", () => showScreen(welcomeScreen));
 }
+
 
 // -------------------- RULE 110 --------------------
 function rule110Investment() {

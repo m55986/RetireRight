@@ -357,14 +357,13 @@ function renderEarnQuestion() {
   choicesDiv.innerHTML = "";
 
   if (earnCurrent >= earnQuestions.length) {
-    // finished all questions
-    document.getElementById("earn-question").textContent = "You've completed all questions.";
-    appendMessage(choicesDiv, "You've completed all questions. You can Exit to the menu or go Invest from the menu.", "info");
-    answered = true;
-    updateProgressBar();
-    return;
-  }
-
+  document.getElementById("earn-question").textContent = "You've completed all questions.";
+  appendMessage(choicesDiv, "You've completed all questions. You can Exit to the menu or go Invest from the menu.", "info");
+  answered = true;
+  updateProgressBar();
+  earnNext.disabled = true; // disable the button
+  return;
+}
   const q = earnQuestions[earnCurrent];
   document.getElementById("earn-question").textContent = `Q${earnCurrent + 1}. ${q.question}`;
 

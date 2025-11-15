@@ -558,14 +558,6 @@ function rule110Investment() {
 
     lastInvestDetails = { method: "Rule 110", stocks: userStocks, bonds: userBonds };
 
-    // Deduct the invested money
-    const invested = userStocks + userBonds;
-    totalMoney -= invested;
-    if (totalMoney < 0) totalMoney = 0;
-
-    saveMoney();
-    moneyDisplay.textContent = totalMoney;
-
     // Ask whether to show returns (Option A flow)
     const showBtn = document.createElement("button");
     showBtn.textContent = "See Market Return";
@@ -626,14 +618,6 @@ function bucketInvestment() {
 
     lastInvestDetails = { method: "Bucket", bucket1: b1, bucket2: b2 };
 
-    // Deduct investment immediately
-    const invested = b1 + b2;
-    totalMoney -= invested;
-    if (totalMoney < 0) totalMoney = 0;
-
-    saveMoney();
-    moneyDisplay.textContent = totalMoney;
-
     const showBtn = document.createElement("button");
     showBtn.textContent = "See Market Return";
     showBtn.style.marginTop = "8px";
@@ -684,13 +668,6 @@ function dcaInvestment() {
     fb.innerHTML = `<p style="color:green">OK — total investment $${totalInvestment}.</p>`;
 
     lastInvestDetails = { method: "DCA", totalInvestment, amt, intervals, periods };
-
-    // Deduct the total invested money
-    totalMoney -= totalInvestment;
-    if (totalMoney < 0) totalMoney = 0;
-
-    saveMoney();
-    moneyDisplay.textContent = totalMoney;
 
     const showBtn = document.createElement("button");
     showBtn.textContent = "See Market Return";

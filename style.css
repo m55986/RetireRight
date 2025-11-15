@@ -90,6 +90,26 @@ p {
   line-height: 1.5;
 }
 
+/* Selected strategy button glow */
+.strategy.selected {
+  box-shadow:
+    0 0 10px #4f7df3,
+    0 0 20px #7fc9ee,
+    0 0 30px #4f7df3;
+  transform: scale(1.05);
+  background: #4f7df3; /* optional */
+}
+
+/* Strategy description glow (different color) */
+.strategy-description {
+  color: #ffb84d; /* orange-ish glow */
+  font-weight: 700;
+  text-shadow:
+    0 0 5px #ffb84d,
+    0 0 10px #ffb84d,
+    0 0 15px #ffb84d;
+  margin-top: 10px;
+}
 
 
 .choice {
@@ -148,6 +168,27 @@ p {
   text-align: center;
   }
   
+  /* Sub-page titles glow */
+.screen h2 {
+  color: #7f9be3; /* main title color */
+  text-shadow:
+    0 0 5px #4f7df3,
+    0 0 10px #7fc9ee,
+    0 0 15px #4f7df3;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+/* Sub-page instructions glow */
+.screen p {
+  color: #ffffff; /* base text color */
+  text-shadow:
+    0 0 3px #33ff77,  /* subtle green glow */
+    0 0 6px #33ff77;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
 /* Glow the question "Do you want to..." */
 .welcome-question {
   color: #7fc9ee; /* bright blue */
@@ -205,17 +246,37 @@ p {
 }
 
 .feedback.correct {
-  color: #4caf50; /* neon green */
-  font-size: 22px; /* bigger */
+   color: #00ff88; /* bright green */
   font-weight: 700;
-  text-shadow: 
-    0 0 5px #4caf50,
-    0 0 10px #7fff7f,
-    0 0 15px #4caf50;
-  margin-top: 10px;
-  transition: all 0.3s ease;
+  font-size: 20px;
+  text-shadow:
+    0 0 5px #00ff88,
+    0 0 10px #00ff88,
+    0 0 20px #00ff88,
+    0 0 30px #00ff88;
 }
 
+/* Label glowing blue */
+.total-label {
+  color: #7f9be3; /* same as title */
+  font-weight: 700;
+  text-shadow:
+    0 0 5px #7f9be3,
+    0 0 10px #7f9be3,
+    0 0 15px #7f9be3,
+    0 0 20px #7f9be3;
+}
+
+/* Money glowing green */
+#moneyEarned {
+  color: #00ff88; /* green */
+  font-weight: 700;
+  text-shadow:
+    0 0 5px #00ff88,
+    0 0 10px #00ff88,
+    0 0 20px #00ff88,
+    0 0 30px #00ff88;
+}
 .app-description {
   font-size: 18px;
   color: #cce0ff; /* light blue text */
@@ -324,12 +385,25 @@ p {
 /* -------------------- Progress Bar -------------------- */
 @keyframes greenGlow {
   0%, 100% {
-    box-shadow: 0 0 8px #4caf50, 0 0 15px #7fff7f;
+    text-shadow:
+      0 0 5px #00ff88,
+      0 0 10px #00ff88,
+      0 0 20px #00ff88,
+      0 0 30px #00ff88;
   }
   50% {
-    box-shadow: 0 0 16px #4caf50, 0 0 30px #7fff7f;
+    text-shadow:
+      0 0 10px #00ff88,
+      0 0 20px #00ff88,
+      0 0 30px #00ff88,
+      0 0 40px #00ff88;
   }
 }
+
+#moneyEarned {
+  animation: greenGlow 1.5s infinite alternate;
+}
+
 
 #progress-container {
   width: 80%;

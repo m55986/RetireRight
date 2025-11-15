@@ -2,52 +2,42 @@
 // DOM ELEMENTS
 // --------------------
 const welcomeScreen = document.getElementById("welcome");
-const level1Screen = document.getElementById("level1");
-const level2Screen = document.getElementById("level2");
-const level3Screen = document.getElementById("level3");
-const resultsScreen = document.getElementById("results");
+const earnScreen = document.getElementById("earn");
+const investScreen = document.getElementById("invest");
+const marketResultsScreen = document.getElementById("market-results");
 
-const startBtn = document.getElementById("startBtn");
-const l1Next = document.getElementById("l1-next");
-const l2Next = document.getElementById("l2-next");
-const finishBtn = document.getElementById("finishBtn");
+const earnBtn = document.getElementById("earnBtn");
+const investBtn = document.getElementById("investBtn");
+const earnNext = document.getElementById("earn-next");
+const moneyDisplay = document.getElementById("moneyEarned");
 const restartBtn = document.getElementById("restartBtn");
 
-// --------------------
-// SCORES
-// --------------------
-let level1Score = 0;
-let level2Score = 0;
-let portfolio = { stocks: 0, bonds: 0, cash: 0 };
+// Market result divs
+const resultsUp = document.getElementById("results-up");
+const resultsDown = document.getElementById("results-down");
+const resultsStable = document.getElementById("results-stable");
+
+// Strategy buttons
+const strategyButtons = document.querySelectorAll(".strategy");
 
 // --------------------
-// LEVEL 1 QUESTIONS
+// GAME VARIABLES
 // --------------------
-const level1Questions = [
-  {
-    question: "Which investment generally has the highest long-term return?",
-    choices: ["Savings Account", "Stocks", "Bonds", "Cash under mattress"],
-    correct: 1
-  },
-  {
-    question: "What does diversification mean?",
-    choices: [
-      "Putting all money in one stock",
-      "Investing in multiple asset types",
-      "Spending money quickly",
-      "Avoiding investments completely"
-    ],
-    correct: 1
-  }
+let totalMoney = 0;
+let earnCurrent = 0;
+
+// Replace this with your real 50 questions
+const earnQuestions = [
+  { question: "Question 1?", choices: ["A", "B", "C", "D"], correct: 0 },
+  { question: "Question 2?", choices: ["A", "B", "C", "D"], correct: 1 },
+  // ... up to 50
 ];
 
-let l1Current = 0;
+function renderEarnQuestion() {
+  const q = earnQuestions[earnCurrent];
+  document.getElementById("earn-question").textContent = q.question;
 
-function renderLevel1() {
-  const q = level1Questions[l1Current];
-  document.getElementById("l1-question").textContent = q.question;
-
-  const choicesDiv = document.getElementById("l1-choices");
+  const choicesDiv = document.getElementById("earn-choices");
   choicesDiv.innerHTML = "";
 
   q.choices.forEach((choice, index) => {
@@ -57,14 +47,15 @@ function renderLevel1() {
 
     btn.addEventListener("click", () => {
       // remove previous selection
-      const allChoices = document.querySelectorAll("#l1-choices .choice");
-      allChoices.forEach(c => c.classList.remove("selected"));
-
-      // highlight clicked choice
+      document.querySelectorAll("#earn-choices .choice").forEach(c => c.classList.remove("selected"));
       btn.classList.add("selected");
 
-      // update score
-      level1Score = (index === q.correct) ? 1 : 0;
+      // check correct
+      if (index === q.correct) {
+        totalMoney += 1000;
+      }
+
+      moneyDisplay.textContent = totalMoney;
     });
 
     choicesDiv.appendChild(btn);
@@ -72,139 +63,66 @@ function renderLevel1() {
 }
 
 // --------------------
-// LEVEL 2 QUESTIONS
-// --------------------
-const level2Questions = [
-  {
-    question: "What happens to stock prices during a market downturn?",
-    choices: ["They rise rapidly", "They fall", "They stay the same", "They disappear"],
-    correct: 1
-  },
-  {
-    question: "Behavioral finance studies:",
-    choices: ["How markets move mechanically", "Investor emotions and biases", "Company profits", "Government policies"],
-    correct: 1
-  }
-];
-
-let l2Current = 0;
-
-function renderLevel2() {
-  const q = level2Questions[l2Current];
-  document.getElementById("l2-question").textContent = q.question;
-
-  const choicesDiv = document.getElementById("l2-choices");
-  choicesDiv.innerHTML = "";
-
-  q.choices.forEach((choice, index) => {
-    const btn = document.createElement("div");
-    btn.className = "choice";
-    btn.textContent = choice;
-
-    btn.addEventListener("click", () => {
-      const allChoices = document.querySelectorAll("#l2-choices .choice");
-      allChoices.forEach(c => c.classList.remove("selected"));
-
-      btn.classList.add("selected");
-
-      level2Score = (index === q.correct) ? 1 : 0;
-    });
-
-    choicesDiv.appendChild(btn);
-  });
-}
-
-// --------------------
-// LEVEL 3 — Portfolio Management
-// --------------------
-function renderLevel3() {
-  document.getElementById("l3-question").textContent = "Allocate 100 points among Stocks, Bonds, and Cash.";
-  const choicesDiv = document.getElementById("l3-choices");
-  choicesDiv.innerHTML = `
-    Stocks: <input type="number" id="input-stocks" min="0" max="100" value="50"> <br><br>
-    Bonds: <input type="number" id="input-bonds" min="0" max="100" value="30"> <br><br>
-    Cash: <input type="number" id="input-cash" min="0" max="100" value="20">
-  `;
-}
-
-// --------------------
-// SHOW RESULTS
-// --------------------
-function showResults() {
-  const totalScore = level1Score + level2Score;
-  document.getElementById("scoreDisplay").textContent = totalScore;
-
-  let type = "";
-  if (portfolio.stocks >= 60) type = "Aggressive Investor";
-  else if (portfolio.stocks >= 30) type = "Balanced Investor";
-  else type = "Conservative Investor";
-
-  document.getElementById("investorType").textContent = type;
-
-  const tipsList = document.getElementById("tipsList");
-  tipsList.innerHTML = "";
-  const tips = [
-    "Review your diversification regularly.",
-    "Consider long-term goals over short-term trends.",
-    "Always maintain an emergency cash reserve."
-  ];
-  tips.forEach(tip => {
-    const li = document.createElement("li");
-    li.textContent = tip;
-    tipsList.appendChild(li);
-  });
-}
-
-// --------------------
-// BUTTON EVENT LISTENERS
+// BUTTON LISTENERS
 // --------------------
 
-// Start Game
-startBtn.addEventListener("click", () => {
+// Welcome screen buttons
+earnBtn.addEventListener("click", () => {
   welcomeScreen.style.display = "none";
-  level1Screen.style.display = "block";
-  renderLevel1();
+  earnScreen.style.display = "block";
+  renderEarnQuestion();
 });
 
-// Level 1 Next
-l1Next.addEventListener("click", () => {
-  level1Screen.style.display = "none";
-  level2Screen.style.display = "block";
-  renderLevel2();
+investBtn.addEventListener("click", () => {
+  welcomeScreen.style.display = "none";
+  investScreen.style.display = "block";
 });
 
-// Level 2 Next
-l2Next.addEventListener("click", () => {
-  level2Screen.style.display = "none";
-  level3Screen.style.display = "block";
-  renderLevel3();
+// Earn Money Next button
+earnNext.addEventListener("click", () => {
+  earnCurrent++;
+  if (earnCurrent < earnQuestions.length) {
+    renderEarnQuestion();
+  } else {
+    // finished earning → go to Invest
+    earnScreen.style.display = "none";
+    investScreen.style.display = "block";
+  }
 });
 
-// Finish — Update Portfolio & Show Results
-finishBtn.addEventListener("click", () => {
-  const stocksVal = parseInt(document.getElementById("input-stocks").value) || 0;
-  const bondsVal = parseInt(document.getElementById("input-bonds").value) || 0;
-  const cashVal = parseInt(document.getElementById("input-cash").value) || 0;
+// Investment strategy selection
+strategyButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const strategy = btn.dataset.strategy;
+    investScreen.style.display = "none";
+    marketResultsScreen.style.display = "block";
 
-  const total = stocksVal + bondsVal + cashVal || 1; // avoid divide by zero
-
-  portfolio.stocks = Math.round((stocksVal / total) * 100);
-  portfolio.bonds = Math.round((bondsVal / total) * 100);
-  portfolio.cash = Math.round((cashVal / total) * 100);
-
-  // Update bars visually
-  document.getElementById("bar-stock").style.width = portfolio.stocks + "%";
-  document.getElementById("bar-bonds").style.width = portfolio.bonds + "%";
-  document.getElementById("bar-cash").style.width = portfolio.cash + "%";
-
-  level3Screen.style.display = "none";
-  resultsScreen.style.display = "block";
-
-  showResults();
+    // simulate market outcome
+    const market = ["up", "down", "stable"][Math.floor(Math.random() * 3)];
+    showMarketResult(market, strategy);
+  });
 });
 
-// Restart
-restartBtn.addEventListener("click", () => {
-  resultsScreen.style.display = "none";
-  welcomeScreen.style.display = "block";
-});
+// --------------------
+// SHOW MARKET RESULT
+// --------------------
+function showMarketResult(market, strategy) {
+  // hide all
+  resultsUp.style.display = "none";
+  resultsDown.style.display = "none";
+  resultsStable.style.display = "none";
+
+  if (market === "up") resultsUp.style.display = "block";
+  else if (market === "down") resultsDown.style.display = "block";
+  else resultsStable.style.display = "block";
+
+  // You can calculate final money here based on strategy & market
+  // Example: simple multiplier
+  let multiplier = 1;
+  if (market === "up") multiplier = 1.2;
+  else if (market === "down") multiplier = 0.8;
+
+  const finalMoney = Math.round(totalMoney * multiplier);
+  const p = document.createElement("p");
+  p.textContent = `You now have $${finalMoney}`;
+  marketResultsScreen.appendChild(p);

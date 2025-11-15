@@ -246,26 +246,6 @@ p {
   }
 }
 
-/* -------------------- Progress Bar -------------------- */
-#progress-container {
-  width: 80%;
-  max-width: 400px;
-  background: #d6e6ff;
-  height: 14px;
-  border-radius: 7px;
-  margin-top: 20px;
-  margin-bottom: 15px;
-}
-
-#progress-bar {
-  width: 0%;
-  height: 100%;
-  background: #4caf50;
-  border-radius: 7px;
-  transition: width 0.4s ease;
-}
-
 .screen {
   transition: all 0.3s ease;
 }
-

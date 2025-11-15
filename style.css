@@ -8,7 +8,7 @@ body {
 }
 
 .screen{
-   width: 95%;
+  width: 90%;
   max-width: 600px;
   margin: 150px auto 30px auto; /* lower on the page */
   padding: 25px;
@@ -133,6 +133,53 @@ p {
   margin-bottom: 30px;
 }
 
+.screen-title {
+  font-size: 90px;           /* bigger font */
+  color: #463ba8;            /* keep same color */
+  text-shadow: 
+    0 0 10px #4f7df3,
+    0 0 20px #7fc9ee,
+    0 0 30px #4f7df3,
+    0 0 40px #7fc9ee;       /* same glow */
+  margin-top: 100px;          /* push it lower on the page */
+  margin-bottom: 30px;       /* space before the box */
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  }
+  
+/* Glow the question "Do you want to..." */
+.welcome-question {
+  color: #7fc9ee; /* bright blue */
+  text-shadow:
+    0 0 5px #4f7df3,
+    0 0 10px #7fc9ee,
+    0 0 15px #4f7df3;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+/* Spread the two buttons apart */
+#welcome-buttons {
+  display: flex;
+  justify-content: space-around; /* wide spacing */
+  gap: 50px; /* extra gap for bigger screens */
+  margin-top: 20px;
+}
+
+  
+  #earn-question {
+  color: #7fc9ee; /* bright blue text */
+  text-shadow: 
+    0 0 5px #4f7df3,
+    0 0 10px #7fc9ee,
+    0 0 15px #4f7df3; /* glowing blue effect */
+  font-weight: 700;  /* optional: make text bolder */
+  font-size: 22px;   /* optional: slightly bigger for emphasis */
+}
+
+
 #portfolio-bars {
   margin-top: 20px;
   text-align: left;
@@ -155,6 +202,30 @@ p {
   margin-top: 5px;
   position: relative;
   overflow: hidden;
+}
+
+.feedback.correct {
+  color: #4caf50; /* neon green */
+  font-size: 22px; /* bigger */
+  font-weight: 700;
+  text-shadow: 
+    0 0 5px #4caf50,
+    0 0 10px #7fff7f,
+    0 0 15px #4caf50;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.app-description {
+  font-size: 18px;
+  color: #cce0ff; /* light blue text */
+  line-height: 1.6;
+  margin: 20px auto 30px auto;
+  max-width: 600px;
+  text-align: center;
+  text-shadow: 
+    0 0 5px #4f7df3,
+    0 0 10px #7fc9ee;
 }
 
 #bar-stock {
@@ -251,23 +322,32 @@ p {
 }
 
 /* -------------------- Progress Bar -------------------- */
+@keyframes greenGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px #4caf50, 0 0 15px #7fff7f;
+  }
+  50% {
+    box-shadow: 0 0 16px #4caf50, 0 0 30px #7fff7f;
+  }
+}
+
 #progress-container {
   width: 80%;
   max-width: 400px;
-  background: #d6e6ff;
+  background: rgba(30, 30, 50, 0.6); /* darker container so green pops */
   height: 14px;
   border-radius: 7px;
-  margin-top: 20px;
-  margin-bottom: 15px;
-  margin-left: auto;
-  margin-right: auto; /* centers it */
+  margin: 20px auto 15px auto; /* center it */
+  overflow: hidden;
 }
 
 #progress-bar {
   width: 0%;
   height: 100%;
-  background: #4caf50;
+  background: #4caf50; /* neon green */
   border-radius: 7px;
- transition: width 0.4s ease;
-}
+  box-shadow: 0 0 8px #4caf50, 0 0 15px #7fff7f;
+  transition: width 0.4s ease, box-shadow 0.3s ease;
+  animation: greenGlow 2s infinite alternate;
 
+}

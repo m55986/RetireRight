@@ -1,6 +1,5 @@
-// script.js
-// Full game logic: Earn Money -> Invest (Rule110 / Bucket / DCA) -> Market Results
-// Works with your HTML structure exactly (IDs/classes you posted).
+// script.js - Full game with progress bar, deterministic market choice (Option A),
+// persistence via localStorage, Earn -> Invest flows (Rule110 / Bucket / DCA).
 
 // -------------------- DOM ELEMENTS --------------------
 const welcomeScreen = document.getElementById("welcome");
@@ -18,17 +17,21 @@ const resultsUp = document.getElementById("results-up");
 const resultsDown = document.getElementById("results-down");
 const resultsStable = document.getElementById("results-stable");
 
-const strategyButtons = document.querySelectorAll(".strategy");
+// progress bar
+const progressBarEl = document.getElementById("progress-bar");
 
-// -------------------- GAME VARIABLES --------------------
-let totalMoney = 0;       // persistent money across the session
-let earnCurrent = 0;      // index of the current earn question
-let answered = false;     // whether current question was answered (prevents skipping)
-let lastInvestDetails = null; // store details for last invest (for display if needed)
+// -------------------- GAME STATE & PERSISTENCE --------------------
+let totalMoney = Number(localStorage.getItem("rsi_totalMoney") || 0);
+let earnCurrent = 0;
+let answered = false;
+let lastInvestDetails = null; // store last investment inputs for result calculation
 
-// -------------------- QUESTIONS (you included many) --------------------
+// initialize displayed money on page load
+moneyDisplay.textContent = totalMoney.toString();
+
+// -------------------- QUESTION BANK --------------------
+// Use the question array you provided earlier. (I've included the set you gave.)
 const earnQuestions = [
-  // (use your full questions array - I'm assuming you pasted those above)
   {
     question: "What is the primary goal of investing?",
     choices: [
@@ -333,41 +336,39 @@ const earnQuestions = [
 
 // -------------------- Helpers --------------------
 function showScreen(showEl) {
-  // hide all four main screens, then show requested
   [welcomeScreen, earnScreen, investScreen, marketResultsScreen].forEach(el => el.style.display = "none");
   showEl.style.display = "block";
 }
 
-// quick text append helper (used for messages)
-function appendMessage(container, text, cssClass = "") {
-  const p = document.createElement("p");
-  p.textContent = text;
-  if (cssClass) p.className = cssClass;
-  container.appendChild(p);
-  return p;
+function updateProgressBar() {
+  if (!progressBarEl) return;
+  const percent = ((earnCurrent + 1) / earnQuestions.length) * 100;
+  progressBarEl.style.width = Math.min(100, percent) + "%";
 }
 
-// -------------------- Render Earn Question --------------------
+function saveMoney() {
+  localStorage.setItem("rsi_totalMoney", String(totalMoney));
+}
+
+// -------------------- RENDER EARN QUESTION --------------------
 function renderEarnQuestion() {
-  // safety: ensure correct index
   if (earnCurrent < 0) earnCurrent = 0;
+  const choicesDiv = document.getElementById("earn-choices");
+  choicesDiv.innerHTML = "";
+
   if (earnCurrent >= earnQuestions.length) {
-    // finished: show completion notice and keep them on Earn screen
-    const choicesDiv = document.getElementById("earn-choices");
-    choicesDiv.innerHTML = "";
-    appendMessage(choicesDiv, "You've completed all available questions. You can Exit or go Invest from the menu.", "info");
+    // finished all questions
+    document.getElementById("earn-question").textContent = "You've completed all questions.";
+    appendMessage(choicesDiv, "You've completed all questions. You can Exit to the menu or go Invest from the menu.", "info");
     answered = true;
+    updateProgressBar();
     return;
   }
 
   const q = earnQuestions[earnCurrent];
   document.getElementById("earn-question").textContent = `Q${earnCurrent + 1}. ${q.question}`;
 
-  const choicesDiv = document.getElementById("earn-choices");
-  choicesDiv.innerHTML = "";
-  answered = false;
-
-  // create choices
+  answered = false; // must answer before moving on
   q.choices.forEach((choiceText, index) => {
     const btn = document.createElement("div");
     btn.className = "choice";
@@ -375,14 +376,13 @@ function renderEarnQuestion() {
     btn.textContent = choiceText;
 
     btn.addEventListener("click", () => {
-      if (answered) return; // do nothing if this question already answered
+      if (answered) return;
       answered = true;
 
       // mark selection
       choicesDiv.querySelectorAll(".choice").forEach(c => c.classList.remove("selected"));
       btn.classList.add("selected");
 
-      // feedback element
       const feedback = document.createElement("p");
       feedback.className = "feedback";
 
@@ -391,72 +391,81 @@ function renderEarnQuestion() {
         feedback.textContent = "Correct! +$1000";
         feedback.style.color = "green";
       } else {
-        feedback.textContent = `Incorrect. The correct answer was: "${q.choices[q.correct]}".`;
+        feedback.textContent = `Incorrect. Correct: "${q.choices[q.correct]}"`;
         feedback.style.color = "red";
       }
 
-      choicesDiv.appendChild(feedback);
       moneyDisplay.textContent = totalMoney.toString();
+      saveMoney();
+      choicesDiv.appendChild(feedback);
+      updateProgressBar();
     });
 
     choicesDiv.appendChild(btn);
   });
+
+  updateProgressBar();
 }
 
-// -------------------- Earn Next & Exit --------------------
-// Ensure earn-exit button exists (create if missing)
+// small helper to append text messages
+function appendMessage(container, text, cls = "") {
+  const p = document.createElement("p");
+  p.textContent = text;
+  if (cls) p.className = cls;
+  container.appendChild(p);
+  return p;
+}
+
+// -------------------- Ensure Earn Exit Button --------------------
 let earnExitBtn = document.getElementById("earn-exit");
 if (!earnExitBtn) {
   earnExitBtn = document.createElement("button");
   earnExitBtn.id = "earn-exit";
   earnExitBtn.textContent = "Exit to Menu";
-  // place it under the Next button in Earn screen
+  // append to earn screen (after Next)
   earnScreen.appendChild(document.createElement("br"));
   earnScreen.appendChild(earnExitBtn);
 }
 
-// Next behavior: only proceed when answered
+// -------------------- BUTTON LISTENERS (Earn) --------------------
 earnNext.addEventListener("click", () => {
   if (!answered) {
-    alert("Please select an answer before continuing.");
+    alert("Please answer the question before moving on.");
     return;
   }
   earnCurrent++;
-  // show next question or finish message
   renderEarnQuestion();
 });
 
-// Exit from Earn screen to welcome menu
 earnExitBtn.addEventListener("click", () => {
   showScreen(welcomeScreen);
 });
 
-// -------------------- Welcome & Invest entry --------------------
+// -------------------- Welcome / Invest entry --------------------
 earnBtn.addEventListener("click", () => {
   showScreen(earnScreen);
   renderEarnQuestion();
 });
 
 investBtn.addEventListener("click", () => {
-  // show invest menu (reset invest screen content to default menu)
   renderInvestMenu();
   showScreen(investScreen);
 });
 
-// -------------------- Invest Menu Renderer --------------------
+// -------------------- INVEST MENU (dynamically rendered) --------------------
 function renderInvestMenu() {
-  // restore the original three strategy buttons inside investScreen
   investScreen.innerHTML = `
     <h2>Choose Your Investment Strategy</h2>
-    <button class="strategy" data-strategy="rule110">Rule 110</button>
-    <button class="strategy" data-strategy="bucket">Bucket Strategy</button>
-    <button class="strategy" data-strategy="dca">Dollar-Cost Averaging</button>
-    <div style="margin-top:18px;">
+    <div style="display:flex;gap:10px;flex-direction:column;align-items:center;">
+      <button class="strategy" data-strategy="rule110">Rule 110</button>
+      <button class="strategy" data-strategy="bucket">Bucket Strategy</button>
+      <button class="strategy" data-strategy="dca">Dollar-Cost Averaging</button>
+    </div>
+    <div style="margin-top:16px;">
       <button id="invest-back">Back to Menu</button>
     </div>
   `;
 
-  // wire up the new buttons
   investScreen.querySelectorAll(".strategy").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const strat = btn.dataset.strategy;
@@ -466,25 +475,23 @@ function renderInvestMenu() {
     });
   });
 
-  // back button
   const investBack = document.getElementById("invest-back");
   investBack.addEventListener("click", () => showScreen(welcomeScreen));
 }
 
-// -------------------- RULE 110 Strategy --------------------
+// -------------------- RULE 110 --------------------
 function rule110Investment() {
   investScreen.innerHTML = `
     <h2>Rule 110</h2>
     <p>Your current money: $${totalMoney}</p>
-    <label>Enter your age: <input id="r110-age" type="number" min="1" max="120"></label>
-    <div id="r110-step" style="margin-top:12px;display:none;">
+    <label>Age: <input id="r110-age" type="number" min="1" max="120"></label>
+    <div id="r110-step" style="display:none;margin-top:12px;">
       <p>Stocks % = 110 - age. Bonds% = 100 - Stocks%</p>
-      <p>Enter how much ($) you will allocate to STOCKS and BONDS/SAVINGS:</p>
       <label>Stocks $: <input id="r110-stocks" type="number" min="0"></label>
       <label>Bonds $: <input id="r110-bonds" type="number" min="0"></label>
       <div style="margin-top:12px;">
         <button id="r110-submit">Submit Allocation</button>
-        <button id="r110-exit">Exit to Menu</button>
+        <button id="r110-exit">Back to Invest Menu</button>
       </div>
       <div id="r110-feedback" style="margin-top:10px;"></div>
     </div>
@@ -494,20 +501,18 @@ function rule110Investment() {
   const stepDiv = document.getElementById("r110-step");
   const feedbackDiv = document.getElementById("r110-feedback");
 
-  document.getElementById("r110-age").addEventListener("change", () => {
+  ageInput.addEventListener("change", () => {
     const age = parseInt(ageInput.value);
     if (isNaN(age) || age <= 0) {
       alert("Enter a valid age.");
       return;
     }
     stepDiv.style.display = "block";
-    // optionally show computed percentages
     const stockPct = 110 - age;
     const bondPct = 100 - stockPct;
     feedbackDiv.innerHTML = `<p>Computed: Stocks ${stockPct}% | Bonds ${bondPct}%</p>`;
   });
 
-  // submit allocation
   document.getElementById("r110-submit").addEventListener("click", () => {
     const age = parseInt(ageInput.value);
     if (isNaN(age) || age <= 0) return alert("Enter a valid age first.");
@@ -516,10 +521,9 @@ function rule110Investment() {
     const correctStocks = Math.round(totalMoney * (stockPct / 100));
     const correctBonds = Math.round(totalMoney - correctStocks);
 
-    const userStocks = Math.round(parseFloat(document.getElementById("r110-stocks").value) || 0);
-    const userBonds = Math.round(parseFloat(document.getElementById("r110-bonds").value) || 0);
+    const userStocks = Math.round(Number(document.getElementById("r110-stocks").value || 0));
+    const userBonds = Math.round(Number(document.getElementById("r110-bonds").value || 0));
 
-    // check correctness (allow small rounding differences)
     const stocksOk = Math.abs(userStocks - correctStocks) <= 1;
     const bondsOk = Math.abs(userBonds - correctBonds) <= 1;
 
@@ -529,39 +533,25 @@ function rule110Investment() {
       feedbackDiv.innerHTML = `<p style="color:red">Incorrect. Correct: Stocks $${correctStocks}, Bonds $${correctBonds}</p>`;
     }
 
-    // store invest details for showing returns
-    lastInvestDetails = {
-      method: "Rule 110",
-      stocks: userStocks,
-      bonds: userBonds
-    };
+    lastInvestDetails = { method: "Rule 110", stocks: userStocks, bonds: userBonds };
 
-    // Ask user if they want to see returns
+    // Ask whether to show returns (Option A flow)
     const showBtn = document.createElement("button");
     showBtn.textContent = "See Market Return";
-    const continueBtn = document.createElement("button");
-    continueBtn.textContent = "Back to Invest Menu";
-    continueBtn.style.marginLeft = "10px";
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "Back to Invest Menu";
+    backBtn.style.marginLeft = "8px";
     feedbackDiv.appendChild(showBtn);
-    feedbackDiv.appendChild(continueBtn);
+    feedbackDiv.appendChild(backBtn);
 
-    showBtn.addEventListener("click", () => {
-      // proceed to market results
-      simulateMarketAndShowResults();
-    });
-    continueBtn.addEventListener("click", () => {
-      renderInvestMenu();
-      showScreen(investScreen);
-    });
+    showBtn.addEventListener("click", () => renderMarketChoiceScreen());
+    backBtn.addEventListener("click", () => { renderInvestMenu(); showScreen(investScreen); });
   });
 
-  document.getElementById("r110-exit").addEventListener("click", () => {
-    renderInvestMenu();
-    showScreen(investScreen);
-  });
+  document.getElementById("r110-exit").addEventListener("click", () => { renderInvestMenu(); showScreen(investScreen); });
 }
 
-// -------------------- BUCKET STRATEGY --------------------
+// -------------------- BUCKET --------------------
 function bucketInvestment() {
   investScreen.innerHTML = `
     <h2>Bucket Strategy</h2>
@@ -582,11 +572,10 @@ function bucketInvestment() {
   const fb = document.getElementById("bucket-feedback");
 
   document.getElementById("bucket-submit").addEventListener("click", () => {
-    const b1 = parseFloat(b1Input.value) || 0;
-    const b2 = parseFloat(b2Input.value) || 0;
-    const total = b1 + b2;
+    const b1 = Number(b1Input.value || 0);
+    const b2 = Number(b2Input.value || 0);
 
-    if (total > totalMoney + 0.001) {
+    if (b1 + b2 > totalMoney + 0.001) {
       fb.innerHTML = `<p style="color:red">You cannot allocate more than your total money ($${totalMoney}).</p>`;
       return;
     }
@@ -600,7 +589,8 @@ function bucketInvestment() {
     if (b1Ok && b2Ok) {
       fb.innerHTML = `<p style="color:green">Good allocation!</p>`;
     } else {
-      fb.innerHTML = `<p style="color:orange">Allocation outside recommended range. Recommended: Bucket1 20%-30% ($${Math.round(totalMoney*0.2)} - $${Math.round(totalMoney*0.3)}), Bucket2 70%-80% ($${Math.round(totalMoney*0.7)} - $${Math.round(totalMoney*0.8)})</p>`;
+      fb.innerHTML = `<p style="color:orange">Allocation outside recommended range. Recommended ranges shown.</p>`;
+      fb.innerHTML += `<p>Bucket1: ${Math.round(totalMoney*0.2)} - ${Math.round(totalMoney*0.3)}, Bucket2: ${Math.round(totalMoney*0.7)} - ${Math.round(totalMoney*0.8)}</p>`;
     }
 
     lastInvestDetails = { method: "Bucket", bucket1: b1, bucket2: b2 };
@@ -610,24 +600,19 @@ function bucketInvestment() {
     showBtn.style.marginTop = "8px";
     fb.appendChild(showBtn);
 
-    showBtn.addEventListener("click", () => {
-      simulateMarketAndShowResults();
-    });
+    showBtn.addEventListener("click", () => renderMarketChoiceScreen());
   });
 
-  document.getElementById("bucket-exit").addEventListener("click", () => {
-    renderInvestMenu();
-    showScreen(investScreen);
-  });
+  document.getElementById("bucket-exit").addEventListener("click", () => { renderInvestMenu(); showScreen(investScreen); });
 }
 
-// -------------------- DOLLAR-COST AVERAGING (DCA) --------------------
+// -------------------- DCA --------------------
 function dcaInvestment() {
   investScreen.innerHTML = `
-    <h2>Dollar-Cost Averaging</h2>
+    <h2>Dollar-Cost Averaging (DCA)</h2>
     <p>Your current money: $${totalMoney}</p>
     <label>Amount per interval: <input id="dca-amt" type="number" min="1"></label>
-    <label>Intervals per period (times per month/year): <input id="dca-intervals" type="number" min="1"></label>
+    <label>Intervals per period: <input id="dca-intervals" type="number" min="1"></label>
     <label>Number of periods: <input id="dca-periods" type="number" min="1"></label>
     <div style="margin-top:12px;">
       <button id="dca-submit">Submit</button>
@@ -642,22 +627,23 @@ function dcaInvestment() {
   const fb = document.getElementById("dca-feedback");
 
   document.getElementById("dca-submit").addEventListener("click", () => {
-    const amt = parseFloat(amtInput.value) || 0;
-    const intervals = parseInt(intervalsInput.value) || 0;
-    const periods = parseInt(periodsInput.value) || 0;
+    const amt = Number(amtInput.value || 0);
+    const intervals = Number(intervalsInput.value || 0);
+    const periods = Number(periodsInput.value || 0);
 
     if (amt <= 0 || intervals <= 0 || periods <= 0) {
-      fb.innerHTML = `<p style="color:red">Please enter valid positive numbers for all fields.</p>`;
+      fb.innerHTML = `<p style="color:red">Please enter valid positive numbers.</p>`;
       return;
     }
 
     const totalInvestment = Math.round(amt * intervals * periods);
     if (totalInvestment > totalMoney) {
-      fb.innerHTML = `<p style="color:red">Total investment ($${totalInvestment}) exceeds your available money ($${totalMoney}). Adjust values.</p>`;
+      fb.innerHTML = `<p style="color:red">Total investment ($${totalInvestment}) exceeds available money ($${totalMoney}).</p>`;
       return;
     }
 
     fb.innerHTML = `<p style="color:green">OK — total investment $${totalInvestment}.</p>`;
+
     lastInvestDetails = { method: "DCA", totalInvestment, amt, intervals, periods };
 
     const showBtn = document.createElement("button");
@@ -665,28 +651,61 @@ function dcaInvestment() {
     showBtn.style.marginTop = "8px";
     fb.appendChild(showBtn);
 
-    showBtn.addEventListener("click", () => {
-      simulateMarketAndShowResults();
-    });
+    showBtn.addEventListener("click", () => renderMarketChoiceScreen());
   });
 
-  document.getElementById("dca-exit").addEventListener("click", () => {
-    renderInvestMenu();
-    showScreen(investScreen);
-  });
+  document.getElementById("dca-exit").addEventListener("click", () => { renderInvestMenu(); showScreen(investScreen); });
 }
 
-// -------------------- SIMULATE MARKET & SHOW RESULTS --------------------
-function simulateMarketAndShowResults() {
-  // pick market randomly
-  const market = ["up", "down", "stable"][Math.floor(Math.random() * 3)];
-  showMarketResult(market);
-  showScreen(marketResultsScreen);
+// -------------------- MARKET CHOICE SCREEN (Option A) --------------------
+function renderMarketChoiceScreen() {
+  // show a simple choice UI asking the user to pick the market outcome
+  investScreen.style.display = "none";
+  marketResultsScreen.style.display = "block";
+
+  // clear previous final-money paragraph if any
+  const old = marketResultsScreen.querySelector("p.final-money");
+  if (old) old.remove();
+
+  // hide result paragraphs until user chooses
+  resultsUp.style.display = "none";
+  resultsDown.style.display = "none";
+  resultsStable.style.display = "none";
+
+  // create a small UI inside marketResultsScreen for picking market (if not already present)
+  let chooser = document.getElementById("market-chooser");
+  if (!chooser) {
+    chooser = document.createElement("div");
+    chooser.id = "market-chooser";
+    chooser.style.marginTop = "12px";
+    chooser.innerHTML = `
+      <p>Choose the market outcome:</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button id="market-up">Market Up</button>
+        <button id="market-down">Market Down</button>
+        <button id="market-stable">Market Consistent</button>
+      </div>
+      <div style="margin-top:10px;"><button id="market-back">Back to Invest Menu</button></div>
+    `;
+    marketResultsScreen.appendChild(chooser);
+
+    document.getElementById("market-up").addEventListener("click", () => { showMarketResult("up"); });
+    document.getElementById("market-down").addEventListener("click", () => { showMarketResult("down"); });
+    document.getElementById("market-stable").addEventListener("click", () => { showMarketResult("stable"); });
+    document.getElementById("market-back").addEventListener("click", () => { chooser.remove(); renderInvestMenu(); showScreen(investScreen); });
+  } else {
+    // chooser already present — just ensure visible
+    chooser.style.display = "block";
+  }
 }
 
-// function that shows results and updates totalMoney based on lastInvestDetails
+// -------------------- SHOW MARKET RESULT & UPDATE totalMoney --------------------
 function showMarketResult(market) {
-  // hide all messages
+  // hide chooser if present
+  const chooser = document.getElementById("market-chooser");
+  if (chooser) chooser.style.display = "none";
+
+  // show the right result message
   resultsUp.style.display = "none";
   resultsDown.style.display = "none";
   resultsStable.style.display = "none";
@@ -695,77 +714,71 @@ function showMarketResult(market) {
   else if (market === "down") resultsDown.style.display = "block";
   else resultsStable.style.display = "block";
 
-  // if no lastInvestDetails (user clicked show without input) just show totalMoney
+  // If no invest action taken, just show totalMoney as unchanged
   if (!lastInvestDetails) {
     appendFinalMoney(totalMoney, market);
+    saveMoney();
     return;
   }
 
-  // We'll compute an outcome based on method:
-  let finalMoney = totalMoney; // default
+  // compute finalMoney based on lastInvestDetails
+  let finalMoney = totalMoney; // default fallback
   const method = lastInvestDetails.method;
 
   if (method === "Rule 110") {
-    // stocks and bonds supplied by user (or 0)
     const stocks = Number(lastInvestDetails.stocks) || 0;
     const bonds = Number(lastInvestDetails.bonds) || 0;
-    // multipliers
     const stockMult = market === "up" ? 1.2 : market === "down" ? 0.8 : 1.0;
     const bondMult = market === "up" ? 1.05 : market === "down" ? 0.95 : 1.0;
     const stockResult = Math.round(stocks * stockMult);
     const bondResult = Math.round(bonds * bondMult);
-
-    // assume any remaining money (not invested) stays as cash (no change)
     const invested = stocks + bonds;
     const remaining = totalMoney - invested;
     finalMoney = stockResult + bondResult + Math.round(remaining);
   } else if (method === "Bucket") {
     const b1 = Number(lastInvestDetails.bucket1) || 0;
     const b2 = Number(lastInvestDetails.bucket2) || 0;
-    // bucket1: ready-to-use (milder change). bucket2: growth (stocks-like)
     const b1Mult = market === "up" ? 1.05 : market === "down" ? 0.95 : 1.0;
     const b2Mult = market === "up" ? 1.2 : market === "down" ? 0.8 : 1.0;
     finalMoney = Math.round(b1 * b1Mult + b2 * b2Mult + (totalMoney - (b1 + b2)));
   } else if (method === "DCA") {
-    // assume totalInvestment placed into market (growth-like)
     const invested = Number(lastInvestDetails.totalInvestment) || 0;
     const invMult = market === "up" ? 1.2 : market === "down" ? 0.8 : 1.0;
     finalMoney = Math.round(invested * invMult + (totalMoney - invested));
   } else {
-    // fallback: if unknown method, do simple multiplier on total
     const mult = market === "up" ? 1.2 : market === "down" ? 0.8 : 1.0;
     finalMoney = Math.round(totalMoney * mult);
   }
 
-  // Update totalMoney to finalMoney (money persists)
+  // update totalMoney & persist
   totalMoney = finalMoney;
   moneyDisplay.textContent = totalMoney.toString();
+  saveMoney();
 
   appendFinalMoney(finalMoney, market);
 }
 
-// helper to append final money paragraph in marketResultsScreen
+// helper to append final-money paragraph
 function appendFinalMoney(amount, market) {
-  // remove previous final-money p
   const old = marketResultsScreen.querySelector("p.final-money");
   if (old) old.remove();
-
   const p = document.createElement("p");
   p.className = "final-money";
   p.textContent = `After the market (${market.toUpperCase()}), you now have $${amount}`;
   marketResultsScreen.appendChild(p);
 }
 
-// -------------------- RESTART button --------------------
+// -------------------- RESTART (full reset) --------------------
 restartBtn.addEventListener("click", () => {
-  // reset everything
   totalMoney = 0;
   earnCurrent = 0;
   answered = false;
   lastInvestDetails = null;
   moneyDisplay.textContent = totalMoney.toString();
-
-  // clear any dynamic contents
+  saveMoney();
   renderInvestMenu();
   showScreen(welcomeScreen);
 });
+
+// -------------------- Initialize (show welcome) --------------------
+showScreen(welcomeScreen);

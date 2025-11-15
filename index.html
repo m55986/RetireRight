@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ready Set Invest!</title>
+
+  <!-- Link to your CSS file -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Link to your JS file -->
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Main Title -->
+  <h1>Mission: Retire by the age of 65</h1>
+
+  <!-- WELCOME SCREEN -->
+  <section id="welcome" class="screen">
+    <h2>Ready, Set, Invest!</h2>
+    <p>Your goal is to build enough wealth to retire comfortably by age 65.</p>
+
+    <button id="startBtn">Start</button>
+  </section>
+
+  <!-- LEVEL 1 — Investing Basics -->
+  <section id="level1" class="screen" style="display:none;">
+    <h2>Level 1: Investing Fundamentals</h2>
+    <p id="l1-question">Question placeholder</p>
+
+    <div id="l1-choices"></div>
+
+    <button id="l1-next">Next</button>
+  </section>
+
+  <!-- LEVEL 2 — Market Behavior -->
+  <section id="level2" class="screen" style="display:none;">
+    <h2>Level 2: Market Behavior</h2>
+    <p id="l2-question">Question placeholder</p>
+
+    <div id="l2-choices"></div>
+
+    <button id="l2-next">Next</button>
+  </section>
+
+  <!-- LEVEL 3 — Portfolio Management -->
+  <section id="level3" class="screen" style="display:none;">
+    <h2>Level 3: Portfolio Management</h2>
+    <p id="l3-question">Question placeholder</p>
+
+    <div id="l3-choices"></div>
+
+    <!-- Visual Portfolio Snapshot (simple bars) -->
+    <div id="portfolio-bars">
+      <div>Stocks <div id="bar-stock" class="bar"></div></div>
+      <div>Bonds <div id="bar-bonds" class="bar"></div></div>
+      <div>Cash <div id="bar-cash" class="bar"></div></div>
+    </div>
+
+    <button id="finishBtn">Finish</button>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="results" class="screen" style="display:none;">
+    <h2>Your Investment Report</h2>
+
+    <p>Your Score: <span id="scoreDisplay">0</span></p>
+
+    <h3>Investor Type:</h3>
+    <p id="investorType"></p>
+
+    <h3>Personalized Tips:</h3>
+    <ul id="tipsList"></ul>
+
+    <button id="restartBtn">Restart</button>
+  </section>
+
+</body>
+</html>

@@ -14,7 +14,49 @@
 
 <body>
 
+<!-- WELCOME SCREEN -->
+<section id="welcome" class="screen">
+  <h2>Do you want to...</h2>
+  <div id="welcome-buttons">
+    <button id="earnBtn">Earn Money</button>
+    <button id="investBtn">Invest</button>
+  </div>
+</section>
 
+<!-- EARN MONEY SCREEN -->
+<section id="earn" class="screen" style="display:none;">
+  <h2>Earn Money</h2>
+  <div id="progress-container">
+  <div id="progress-bar"></div>
+</div>
+  <p id="earn-question">Question placeholder</p>
+  <div id="earn-choices"></div>
+  <button id="earn-next">Next</button>
+  <p>Total Earned: $<span id="moneyEarned">0</span></p>
+</section>
+
+<!-- INVEST SCREEN -->
+<section id="invest" class="screen" style="display:none;">
+  <h2>Choose Your Investment Strategy</h2>
+  <button class="strategy" data-strategy="rule110">Rule 110</button>
+  <button class="strategy" data-strategy="bucket">Bucket Strategy</button>
+  <button class="strategy" data-strategy="dca">Dollar-Cost Averaging</button>
+</section>
+
+<!-- MARKET RESULTS SCREEN -->
+<section id="market-results" class="screen" style="display:none;">
+  <h2>Market Outcome</h2>
+  <div id="results-up" style="display:none;">
+    <p>Market was UP! You earned more!</p>
+  </div>
+  <div id="results-down" style="display:none;">
+    <p>Market was DOWN! You lost some money.</p>
+  </div>
+  <div id="results-stable" style="display:none;">
+    <p>Market was STABLE! Your investment stayed roughly the same.</p>
+  </div>
+  <button id="restartBtn">Restart</button>
+</section>
 
 </body>
 </html>

@@ -99,11 +99,30 @@ button:hover {
   font-size: 1.1rem;
 }
 
-/* -------------------- Portfolio bars (optional if you keep them) -------------------- */
+/* -------------------- Portfolio bars -------------------- */
 .bar {
   height: 25px;
   background-color: #4a90e2;
   margin: 5px 0;
   border-radius: 6px;
   transition: width 0.5s ease;
+}
+
+/* -------------------- Progress Bar (added) -------------------- */
+#progress-container {
+  width: 80%;
+  max-width: 400px;
+  background: #d6e6ff;
+  height: 14px;
+  border-radius: 7px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 100%;
+  background: #4caf50;
+  border-radius: 7px;
+  transition: width 0.4s ease;
 }
